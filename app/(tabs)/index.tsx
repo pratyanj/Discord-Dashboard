@@ -1,31 +1,36 @@
-import { Text, View , StyleSheet, Animated} from "react-native";
-import { Link} from "expo-router";
-import { useEffect, useRef } from "react";
-export default function Index() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(-100)).current;
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+import Button from '@/components/Button';
+import ImageViewer from '@/components/ImageViewer';
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 2,
-        duration: 3000,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        tension: 20,
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri)
+    } else {
+      alert('You did not select any image.');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        Hello World
-      </Text>
-      <Link href={"/(tabs)/about_us"} style={[styles.text,styles.links]}>Go to About us</Link>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+      </View>
+      <View style={styles.footerContainer}>
+        <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+        <Button label="Use this photo" />
+      </View>
     </View>
   );
 }
@@ -33,20 +38,14 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1f1f1f",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#25292e',
+    alignItems: 'center',
   },
-  links: {
-    fontSize: 16,
-    marginTop: 20,
-    backgroundColor: "#000",
-    padding: 10,
-    borderRadius: 20,
+  imageContainer: {
+    flex: 1,
   },
-  text: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
   },
 });
